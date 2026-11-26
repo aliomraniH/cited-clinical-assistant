@@ -1,0 +1,18 @@
+{
+  "gad": {
+    "label": "Generalized anxiety disorder",
+    "query": "(\"Anxiety Disorders\"[MeSH Terms] OR \"generalized anxiety\"[Title/Abstract] OR \"anxiety disorder\"[Title/Abstract])"
+  },
+  "depression": {
+    "label": "Depression",
+    "query": "(\"Depressive Disorder\"[MeSH Terms] OR \"depressive disorder\"[Title/Abstract] OR \"major depression\"[Title/Abstract] OR \"depressive symptoms\"[Title/Abstract])"
+  },
+  "ocd": {
+    "label": "Obsessive-compulsive disorder",
+    "query": "(\"Obsessive-Compulsive Disorder\"[MeSH Terms] OR \"obsessive-compulsive\"[Title/Abstract] OR \"obsessive compulsive\"[Title/Abstract])"
+  },
+  "ptsd": {
+    "label": "Post-traumatic stress disorder",
+    "query": "(\"Stress Disorders, Post-Traumatic\"[MeSH Terms] OR \"posttraumatic stress\"[Title/Abstract] OR \"post-traumatic stress\"[Title/Abstract] OR PTSD[Title/Abstract])"
+  }
+}

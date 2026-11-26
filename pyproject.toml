@@ -1,0 +1,13 @@
+[project]
+name = "cited-clinical-assistant"
+version = "0.1.0"
+description = "Research demo: answers mental-health clinical questions from PubMed with citations. Not medical advice."
+requires-python = ">=3.11"
+dependencies = ["requests>=2.31"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
