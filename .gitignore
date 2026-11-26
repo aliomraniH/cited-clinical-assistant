@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+# Snapshots hold PubMed abstracts, which may carry publisher copyright: keep them out of git.
+data/
