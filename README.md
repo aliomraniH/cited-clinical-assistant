@@ -36,3 +36,14 @@ python scripts/ask.py "Does prolonged exposure therapy reduce PTSD symptoms?" --
 The answerer sends the top passages, numbered, to the model and requires a citation such as `[2]` on every sentence. If the passages do not cover the question, the model must reply `INSUFFICIENT_EVIDENCE`. Questions whose best BM25 score is below `--min-score` are refused before the model is called. Code then checks each answer for uncited sentences and citations to passages that do not exist. Whether a cited passage really supports its sentence is left to the cross-family judge in the eval harness.
 
 Point `--base-url` (or `CCA_BASE_URL`, plus `CCA_API_KEY` if needed) at any OpenAI-compatible server, such as Ollama, vLLM, llama.cpp or Hugging Face Inference Providers, to swap models without changing code.
+
+## Eval
+
+```bash
+python scripts/fetch_eval_corpus.py                 # rebuilds the frozen 2,015-record corpus from eval/corpus_pmids.txt
+python scripts/run_eval.py --retrieval-only         # retrieval and gating metrics, no model calls
+python scripts/run_eval.py --model Qwen/Qwen3.5-9B --base-url https://router.huggingface.co/v1 \
+    --judge-model openai/gpt-oss-120b               # full run; results/<run_id>/summary.json and items.jsonl
+```
+
+`eval/questions.jsonl` has 21 answerable questions, each written from one paper in the frozen corpus with its key facts, and 8 unanswerable ones: off-topic questions, or in-domain questions the corpus does not cover. Metrics follow the eval-run skill. Code grades recall@10, abstention, gold-paper citation, uncited sentences and latency. A judge from a different model family grades citation support and key-fact coverage, and the script refuses a judge from the same family as the model under test.
