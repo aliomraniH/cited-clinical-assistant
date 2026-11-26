@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<PubmedArticleSet>
+ <PubmedArticle>
+  <MedlineCitation>
+   <PMID>111</PMID>
+   <Article>
+    <Journal><JournalIssue><PubDate><Year>2026</Year><Month>Nov</Month></PubDate></JournalIssue><Title>J Anxiety  Disord</Title></Journal>
+    <ArticleTitle>CBT for <i>generalized</i> anxiety</ArticleTitle>
+    <Abstract>
+     <AbstractText Label="BACKGROUND">Anxiety is common.</AbstractText>
+     <AbstractText Label="RESULTS">CBT  reduced   GAD-7 scores.</AbstractText>
+    </Abstract>
+    <AuthorList><Author/><Author/></AuthorList>
+    <PublicationTypeList><PublicationType>Randomized Controlled Trial</PublicationType></PublicationTypeList>
+    <ArticleDate><Year>2026</Year><Month>11</Month><Day>20</Day></ArticleDate>
+   </Article>
+   <MeshHeadingList><MeshHeading><DescriptorName>Anxiety Disorders</DescriptorName></MeshHeading></MeshHeadingList>
+  </MedlineCitation>
+  <PubmedData><ArticleIdList><ArticleId IdType="pubmed">111</ArticleId><ArticleId IdType="doi">10.1/abc</ArticleId></ArticleIdList></PubmedData>
+ </PubmedArticle>
+ <PubmedArticle>
+  <MedlineCitation>
+   <PMID>222</PMID>
+   <Article>
+    <Journal><JournalIssue><PubDate><MedlineDate>2025 Dec-2026 Jan</MedlineDate></PubDate></JournalIssue><Title>PTSD Journal</Title></Journal>
+    <ArticleTitle>Prolonged exposure for PTSD</ArticleTitle>
+    <Abstract><AbstractText>Exposure therapy helped veterans.</AbstractText></Abstract>
+   </Article>
+  </MedlineCitation>
+ </PubmedArticle>
+</PubmedArticleSet>
