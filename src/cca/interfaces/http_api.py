@@ -138,6 +138,10 @@ def create_app(assistant: Assistant | None = None, mount_mcp: bool = True) -> Fa
     def converse(body: ConverseIn):
         return a.converse(body.message, body.session_id)
 
+    @app.get("/v1/converse/{session_id}", dependencies=guard)
+    def converse_get(session_id: str):
+        return a.get_conversation(session_id)
+
     @app.post("/v1/converse/end", dependencies=guard)
     def converse_end(body: EndIn):
         return a.end_conversation(body.session_id)

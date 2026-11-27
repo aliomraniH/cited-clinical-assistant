@@ -81,6 +81,36 @@ class Conversation:
             self.memory.add(pairs)
         return pairs
 
+    # ---------- persistence ----------
+
+    def to_state(self) -> dict:
+        """Everything needed to resume this conversation in another process (see store.py)."""
+        def r(x: Interpretation) -> dict:
+            return {**x.to_dict(), "_pmids": getattr(x, "_pmids", [])}
+        return {"version": 1, "state": self.state, "readings": [r(x) for x in self.readings],
+                "request_text": self.request_text, "answered_ids": self.answered_ids,
+                "corrections": self.corrections, "next_id": self._next_id, "last_request": self._last_request,
+                "clarify_options": [r(x) for x in getattr(self, "_clarify_options", [])],
+                "session": self.session.to_dict()}
+
+    @classmethod
+    def from_state(cls, st: dict, client, retriever, **kw) -> "Conversation":
+        def r(d: dict) -> Interpretation:
+            d = dict(d)
+            pm = d.pop("_pmids", [])
+            it = Interpretation(**d)
+            it._pmids = pm  # type: ignore[attr-defined]
+            return it
+        c = cls(client, retriever, session=Session.from_dict(st["session"]), **kw)
+        c.state, c.readings = st["state"], [r(x) for x in st["readings"]]
+        c.request_text, c.answered_ids = st["request_text"], st["answered_ids"]
+        c.corrections, c._next_id, c._last_request = st["corrections"], st["next_id"], st["last_request"]
+        if st.get("clarify_options"):
+            ids = [x["id"] for x in st["clarify_options"]]
+            c._clarify_options = [next((y for y in c.readings if y.id == i), None) or r(d)
+                                  for i, d in zip(ids, st["clarify_options"])]
+        return c
+
     # ---------- steps ----------
 
     def _new_request(self, text: str, note: str | None = None) -> dict:

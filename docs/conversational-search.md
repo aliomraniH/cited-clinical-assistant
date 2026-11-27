@@ -46,11 +46,27 @@ interpreter as examples ("people who said X meant Y" / "did not mean Y"). Text i
 it is stored, and only `roleplay` and `test` sessions teach the memory until the clinician review is done;
 live sessions read it but never write it.
 
-## Interfaces
+## Interfaces and stored sessions
 
-- Python: `Assistant.converse(message, session_id)` and `Assistant.end_conversation(session_id)`.
-- HTTP: `POST /v1/converse {message, session_id?}`, `POST /v1/converse/end {session_id}`.
-- MCP: tools `converse` and `end_conversation`.
+Conversation state is saved after every turn (`src/cca/store.py`), so the chatbot, the HTTP API, the MCP
+server or another replica can all continue the same conversation by its `session_id`, the way a hosted chat
+API keeps stored conversations.
+
+- Python: `Assistant.converse(message, session_id)`, `get_conversation(session_id)`, `end_conversation(session_id)`.
+- HTTP: `POST /v1/converse {message, session_id?}`, `GET /v1/converse/{session_id}`, `POST /v1/converse/end {session_id}`.
+- MCP: tools `converse`, `get_conversation`, `end_conversation`.
+- Chatbot (`app.py`): the chat tab now runs conversational search; the session id rides in a hidden comment.
+
+| `CCA_SESSION_STORE` | Where state lives |
+|---|---|
+| `file` (default) | `data/sessions/*.json`, one machine |
+| `supabase` | table `conversation_state` (no anon read); needs `SUPABASE_URL` and, outside the cloud proxy, `SUPABASE_KEY` (secret key) |
+| `memory` | this process only (tests) |
+
+**Running the app on its own (Hugging Face Space):** add Space secrets `SUPABASE_KEY`, and `ANTHROPIC_API_KEY`
+and/or `OPENAI_API_KEY` if a closed model should answer; set variables `CCA_SESSION_STORE=supabase`,
+`SUPABASE_URL`, and `CCA_MODEL` (`hf:Qwen/Qwen3.8-27B`, `anthropic:claude-sonnet-5-5` or `openai:gpt-5.5`).
+No Claude session is needed for the app to run.
 
 ## Role-play eval (`src/cca/roleplay.py`, `scripts/run_roleplay.py`)
 

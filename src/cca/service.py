@@ -7,8 +7,10 @@ Configuration (environment):
   CCA_CORPUS      directory of *.jsonl snapshots (default data/snapshots, falling back to data/eval_corpus)
   CCA_BASE_URL    OpenAI-compatible endpoint (default local Ollama; HF router in the cloud)
   CCA_API_KEY     bearer token for that endpoint (not needed behind the cloud proxy)
-  CCA_MODEL       answer model (default Qwen/Qwen3.5-9B, the baseline winner on speed and cost)
+  CCA_MODEL       answer model (default Qwen/Qwen3.5-9B, the baseline winner on speed and cost);
+                  "anthropic:<model>" or "openai:<model>" call those APIs with ANTHROPIC_API_KEY / OPENAI_API_KEY
   CCA_EMBEDDER    overlap embedder (default SapBERT)
+  CCA_SESSION_STORE    where conversation state lives: file (default), supabase or memory (store.py)
   CCA_PHRASING_MEMORY  phrasing memory file (default data/phrasing_memory.jsonl); live sessions read it, never write it
 """
 
@@ -48,10 +50,12 @@ class Assistant:
     overlap_agent: object | None = None   # anything with .analyze(text) -> OverlapResult
     k: int = 8
     min_top_score: float = 4.0
+    conversation_options: dict = field(default_factory=dict)  # extra Conversation settings
 
     def __post_init__(self):
         self._lock = threading.Lock()
-        self._conversations: dict = {}
+        self._store = None    # conversation state store (store.py)
+        self._memory = None   # phrasing memory
         self._bm25: BM25 | None = None
         self._docs: list[dict] = []
 
@@ -66,7 +70,12 @@ class Assistant:
 
     def chat(self):
         if self.client is None:
-            self.client = ChatClient(self.model)
+            # "anthropic:<model>", "openai:<model>" or "hf:<org>/<model>" pick a provider; a bare id uses CCA_BASE_URL.
+            if self.model.split(":", 1)[0] in ("anthropic", "openai", "hf"):
+                from .roleplay import make_client
+                self.client = make_client(self.model)
+            else:
+                self.client = ChatClient(self.model)
         return self.client
 
     def overlap_engine(self):
@@ -177,30 +186,58 @@ class Assistant:
 
     # ---------- conversational search ----------
 
+    def _conversation_kit(self):
+        from .tracking import PhrasingMemory
+        with self._lock:
+            if self._store is None:
+                from .store import make_store
+                self._store = make_store()
+            if self._memory is None:
+                path = Path(os.environ.get("CCA_PHRASING_MEMORY", ROOT / "data" / "phrasing_memory.jsonl"))
+                self._memory = PhrasingMemory(path)
+        return self._store, self._memory
+
     def converse(self, message: str, session_id: str | None = None) -> dict:
         """One turn of conversational search (interpret -> clarify -> confirm -> cited answer).
-        Pass back the returned session_id to continue the same conversation."""
+        State is saved after every turn (store.py), so any interface or process can continue the
+        conversation by passing back the returned session_id."""
         from .converse import Conversation
-        from .tracking import PhrasingMemory, Session
+        from .tracking import Session
         index, chat = self.index(), self.chat()   # take these before the (non-reentrant) lock
-        with self._lock:
-            conv = self._conversations.get(session_id) if session_id else None
-            if conv is None:
-                path = Path(os.environ.get("CCA_PHRASING_MEMORY", ROOT / "data" / "phrasing_memory.jsonl"))
-                conv = Conversation(chat, index, memory=PhrasingMemory(path), session=Session(source="live"))
-                self._conversations[conv.session.session_id] = conv
-                while len(self._conversations) > 200:   # bound memory: drop the oldest
-                    self._conversations.pop(next(iter(self._conversations)))
+        store, memory = self._conversation_kit()
+        state = store.load(session_id) if session_id else None
+        if state is not None and state["session"].get("ended"):
+            state = None  # an ended session starts over with a new id
+        opts = {"min_top_score": self.min_top_score, **self.conversation_options}
+        conv = (Conversation.from_state(state, chat, index, memory=memory, **opts) if state is not None
+                else Conversation(chat, index, memory=memory, session=Session(source="live"), **opts))
         out = conv.respond(message)
+        store.save(conv.session.session_id, conv.to_state())
         out["disclaimer"] = DISCLAIMER
         return out
 
+    def get_conversation(self, session_id: str) -> dict:
+        """Transcript and state of a stored conversation."""
+        store, _ = self._conversation_kit()
+        st = store.load(session_id)
+        if st is None:
+            return {"status": "unknown_session", "session_id": session_id}
+        sess = st["session"]
+        return {"status": "ok", "session_id": session_id, "state": st["state"], "ended": sess.get("ended", False),
+                "transcript": [{"role": e["role"], "content": e["payload"].get("text", "")}
+                               for e in sess["events"] if e["kind"] in ("message", "reply")],
+                "readings": st["readings"]}
+
     def end_conversation(self, session_id: str) -> dict:
         """Score the session's readings from its signals. Live sessions do not teach the phrasing memory."""
-        conv = self._conversations.pop(session_id, None)
-        if conv is None:
+        from .converse import Conversation
+        store, memory = self._conversation_kit()
+        st = store.load(session_id)
+        if st is None:
             return {"status": "unknown_session", "session_id": session_id}
+        conv = Conversation.from_state(st, self.chat(), self.index(), memory=memory, **self.conversation_options)
         pairs = conv.end()
+        store.save(session_id, conv.to_state())
         return {"status": "ended", "session_id": session_id, "scores": [p.to_dict() for p in pairs],
                 "query_changes": conv.session.query_changes}
 

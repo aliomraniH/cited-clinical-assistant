@@ -44,6 +44,10 @@ def build_server(assistant: Assistant | None = None, hub: PeerHub | None = None)
     def converse(message: str, session_id: str | None = None) -> dict:
         return a.converse(message, session_id)
 
+    @mcp.tool(description="Read a stored conversational-search session: transcript, state and current readings.")
+    def get_conversation(session_id: str) -> dict:
+        return a.get_conversation(session_id)
+
     @mcp.tool(description="End a conversational-search session and return the per-reading scores.")
     def end_conversation(session_id: str) -> dict:
         return a.end_conversation(session_id)

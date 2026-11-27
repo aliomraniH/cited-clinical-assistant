@@ -120,7 +120,17 @@ class Session:
     def to_dict(self) -> dict:
         return {"session_id": self.session_id, "source": self.source, "meta": self.meta,
                 "events": [asdict(e) for e in self.events], "readings": self.readings,
-                "query_changes": self.query_changes}
+                "query_changes": self.query_changes, "turn": self.turn, "ended": self.ended}
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "Session":
+        s = cls(source=d.get("source", "live"), session_id=d["session_id"], meta=d.get("meta"))
+        s.events = [Event(**e) for e in d.get("events", [])]
+        s.readings = d.get("readings", {})
+        s.query_changes = d.get("query_changes", [])
+        s.turn = d.get("turn", max((e.turn for e in s.events), default=0))
+        s.ended = d.get("ended", False)
+        return s
 
 
 # ---------- end-of-session scoring ----------

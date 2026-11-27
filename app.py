@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import html
 import math
+import re
 import os
 import sys
 from pathlib import Path
@@ -69,11 +70,29 @@ def format_answer(r: dict) -> str:
     return "\n".join(out)
 
 
+_SID = re.compile(r"<!-- sid:([A-Za-z0-9_.-]+) -->")
+
+
+def _session_from(history) -> str | None:
+    """The conversation id rides in a hidden comment on the assistant's last reply, so the chat needs no
+    server-side UI state; the conversation itself is stored (store.py) and also reachable from the API."""
+    for turn in reversed(history or []):
+        content = turn.get("content") if isinstance(turn, dict) else (turn[1] if len(turn) > 1 else "")
+        m = _SID.search(str(content or ""))
+        if m:
+            return m.group(1)
+    return None
+
+
 def chat(message: str, history):
     try:
-        return format_answer(A.ask(message))
+        r = A.converse(message, _session_from(history))
     except Exception as e:
         return f"Something went wrong reaching the model ({type(e).__name__}). Try again in a minute."
+    text = r["reply"]
+    if r.get("state") == "crisis":
+        text += "\n\n" + _resources_md()
+    return f"{text}\n\n<!-- sid:{r['session_id']} -->"
 
 
 def graph_svg(res: dict) -> str:

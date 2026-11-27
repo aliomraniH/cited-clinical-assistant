@@ -221,6 +221,9 @@ def test_assistant_converse_keeps_session(tmp_path):
     from cca.service import Assistant
     a = Assistant(client=FakeChat(MULTI))
     os.environ["CCA_PHRASING_MEMORY"] = str(tmp_path / "pm.jsonl")
+    os.environ["CCA_SESSION_STORE"] = "file"
+    from cca.store import FileStore
+    a._store = FileStore(tmp_path / "sessions")
     a._bm25, a._docs = BM25(DOCS), DOCS
     a.min_top_score = 0.1
     r1 = a.converse("i keep checking the stove, i barely sleep and drinking more")
@@ -246,3 +249,31 @@ def test_separate_questions_from_one_sentence_are_not_clarified():
     two = {"interpretations": [dict(AMBIG["interpretations"][0]), dict(AMBIG["interpretations"][1], alternative=False)]}
     c = conv(FakeChat(two))
     assert c.respond("how do you deal with intrusive thoughts?")["state"] == "confirm"
+
+
+def test_session_resumes_in_another_process(tmp_path):
+    """Two Assistant objects share only the store, like two app replicas or the chatbot and the API."""
+    from cca.service import Assistant
+    from cca.store import FileStore
+    os.environ["CCA_PHRASING_MEMORY"] = str(tmp_path / "pm.jsonl")
+    a1, a2 = Assistant(client=FakeChat(MULTI)), Assistant(client=FakeChat(MULTI))
+    for a in (a1, a2):
+        a._bm25, a._docs, a.min_top_score = BM25(DOCS), DOCS, 0.1
+        a.conversation_options = {"same_evidence": 1.01, "samples": 1}
+        a._store = FileStore(tmp_path / "sessions")
+    r1 = a1.converse("i keep checking the stove, i barely sleep and drinking more")
+    r2 = a2.converse("drop 3", r1["session_id"])
+    assert r2["state"] == "answered" and r2["session_id"] == r1["session_id"]
+    got = a1.get_conversation(r1["session_id"])
+    assert got["state"] == "answered" and len(got["transcript"]) == 4
+    out = a2.end_conversation(r1["session_id"])
+    assert {p["interp_id"]: p["value"] for p in out["scores"]}["i3"] == -0.7
+    assert a1.converse("new question about sleep", r1["session_id"])["session_id"] != r1["session_id"]
+
+
+def test_state_roundtrip_mid_clarify():
+    c = conv(FakeChat(AMBIG))
+    c.respond("how do you deal with intrusive thoughts?")
+    c2 = Conversation.from_state(json.loads(json.dumps(c.to_state())), FakeChat(AMBIG), BM25(DOCS),
+                                 samples=1, min_top_score=0.1, same_evidence=1.01)
+    assert c2.respond("2")["state"] == "confirm" and len(c2.readings) == 1

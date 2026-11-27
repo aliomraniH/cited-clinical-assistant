@@ -46,3 +46,14 @@ create policy "public read" on public.phrasing_memory for select to anon, authen
 -- Event logs hold full transcripts: no anon read.
 grant select on public.conversations, public.phrasing_memory to anon, authenticated;
 grant all on public.conversations, public.conversation_events, public.phrasing_memory to service_role;
+
+-- Live conversation state, so any process (chatbot, API, MCP server) can resume a session by id.
+-- Holds transcripts: no anon read; only the secret key (service_role) reads and writes it.
+create table if not exists public.conversation_state (
+  session_id text primary key,
+  source text not null,
+  state jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.conversation_state enable row level security;
+grant all on public.conversation_state to service_role;
