@@ -53,3 +53,11 @@ def test_judge_verdicts_and_facts():
     assert item["judge_facts"]["covered"] == [1]
     s = summarize([item])
     assert s["citation_precision_pct"] == 50.0 and s["key_fact_coverage_pct"] == 50.0
+
+
+def test_parse_verdict():
+    from cca.evaluate import parse_verdict
+    assert parse_verdict("SUPPORTED") == "SUPPORTED"
+    assert parse_verdict("Unsupported.") == "UNSUPPORTED"
+    assert parse_verdict("**Partial**") == "PARTIAL"
+    assert parse_verdict("") == "UNKNOWN"
