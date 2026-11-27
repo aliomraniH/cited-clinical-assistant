@@ -44,6 +44,15 @@ class OverlapIn(BaseModel):
                              description="De-identified symptom description. No names, dates or places.")
 
 
+class ConverseIn(BaseModel):
+    message: str = Field(..., min_length=1, max_length=4000)
+    session_id: str | None = None
+
+
+class EndIn(BaseModel):
+    session_id: str
+
+
 class BriefIn(BaseModel):
     question: str = Field(..., min_length=3, max_length=1000)
     case_description: str | None = Field(None, max_length=4000)
@@ -124,6 +133,14 @@ def create_app(assistant: Assistant | None = None, mount_mcp: bool = True) -> Fa
     @app.post("/v1/overlap", dependencies=guard)
     def overlap(body: OverlapIn):
         return a.overlap(body.description)
+
+    @app.post("/v1/converse", dependencies=guard)
+    def converse(body: ConverseIn):
+        return a.converse(body.message, body.session_id)
+
+    @app.post("/v1/converse/end", dependencies=guard)
+    def converse_end(body: EndIn):
+        return a.end_conversation(body.session_id)
 
     @app.post("/v1/brief", dependencies=guard)
     def brief(body: BriefIn):

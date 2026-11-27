@@ -9,6 +9,7 @@ Configuration (environment):
   CCA_API_KEY     bearer token for that endpoint (not needed behind the cloud proxy)
   CCA_MODEL       answer model (default Qwen/Qwen3.5-9B, the baseline winner on speed and cost)
   CCA_EMBEDDER    overlap embedder (default SapBERT)
+  CCA_PHRASING_MEMORY  phrasing memory file (default data/phrasing_memory.jsonl); live sessions read it, never write it
 """
 
 from __future__ import annotations
@@ -50,6 +51,7 @@ class Assistant:
 
     def __post_init__(self):
         self._lock = threading.Lock()
+        self._conversations: dict = {}
         self._bm25: BM25 | None = None
         self._docs: list[dict] = []
 
@@ -172,6 +174,35 @@ class Assistant:
         out["note"] = "Evidence summary for a clinician. Not a diagnosis or treatment recommendation."
         out["disclaimer"] = DISCLAIMER
         return out
+
+    # ---------- conversational search ----------
+
+    def converse(self, message: str, session_id: str | None = None) -> dict:
+        """One turn of conversational search (interpret -> clarify -> confirm -> cited answer).
+        Pass back the returned session_id to continue the same conversation."""
+        from .converse import Conversation
+        from .tracking import PhrasingMemory, Session
+        index, chat = self.index(), self.chat()   # take these before the (non-reentrant) lock
+        with self._lock:
+            conv = self._conversations.get(session_id) if session_id else None
+            if conv is None:
+                path = Path(os.environ.get("CCA_PHRASING_MEMORY", ROOT / "data" / "phrasing_memory.jsonl"))
+                conv = Conversation(chat, index, memory=PhrasingMemory(path), session=Session(source="live"))
+                self._conversations[conv.session.session_id] = conv
+                while len(self._conversations) > 200:   # bound memory: drop the oldest
+                    self._conversations.pop(next(iter(self._conversations)))
+        out = conv.respond(message)
+        out["disclaimer"] = DISCLAIMER
+        return out
+
+    def end_conversation(self, session_id: str) -> dict:
+        """Score the session's readings from its signals. Live sessions do not teach the phrasing memory."""
+        conv = self._conversations.pop(session_id, None)
+        if conv is None:
+            return {"status": "unknown_session", "session_id": session_id}
+        pairs = conv.end()
+        return {"status": "ended", "session_id": session_id, "scores": [p.to_dict() for p in pairs],
+                "query_changes": conv.session.query_changes}
 
 
 _default: Assistant | None = None
