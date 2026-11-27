@@ -2,7 +2,8 @@
 Conversation under test answers, and a judge from another model family scores the transcript.
 
 Model specs:
-  anthropic:<model>   Claude via api.anthropic.com (needs ANTHROPIC_API_KEY env variable)
+  anthropic:<model>   Claude via api.anthropic.com (key from CCA_ANTHROPIC_KEY, else ANTHROPIC_API_KEY;
+                      cloud sessions reserve ANTHROPIC_API_KEY, so use CCA_ANTHROPIC_KEY there)
   openai:<model>      OpenAI via api.openai.com (key from the environment's Network secret, or OPENAI_API_KEY)
   hf:<org>/<model>    any model on Hugging Face Inference Providers (e.g. hf:openai/gpt-oss-120b)
 
@@ -26,9 +27,9 @@ HF_BASE = "https://router.huggingface.co/v1"
 class AnthropicClient:
     def __init__(self, model: str, api_key: str | None = None, timeout: float = 180):
         self.model = model
-        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+        self.api_key = api_key or os.environ.get("CCA_ANTHROPIC_KEY") or os.environ.get("ANTHROPIC_API_KEY")
         if not self.api_key:
-            raise RuntimeError("ANTHROPIC_API_KEY is not set in this environment")
+            raise RuntimeError("CCA_ANTHROPIC_KEY (cloud sessions) or ANTHROPIC_API_KEY (Space secret) is not set")
         self.timeout = timeout
 
     def complete(self, messages: list[dict], temperature: float = 0.0, max_tokens: int = 700) -> str:

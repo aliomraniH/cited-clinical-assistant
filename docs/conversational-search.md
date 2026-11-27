@@ -83,5 +83,5 @@ python scripts/run_roleplay.py --sim anthropic:claude-sonnet-5-5 --judge openai:
 python scripts/upload_roleplay.py eval/roleplay_runs/<run_id> --memory data/phrasing_memory.jsonl
 ```
 
-Keys: `ANTHROPIC_API_KEY` environment variable for `anthropic:`; the OpenAI Network secret for
+Keys: `CCA_ANTHROPIC_KEY` environment variable in cloud sessions (the platform reserves `ANTHROPIC_API_KEY`), `ANTHROPIC_API_KEY` as a Space secret, for `anthropic:`; the OpenAI Network secret for
 `openai:`; `hf:` uses the Hugging Face Network secret. Supabase tables: `db/schema_conversations.sql`.
