@@ -1,0 +1,39 @@
+{
+  "run_id": "20261127T064720Z-overlap-Qwen3.5-9B-Qwen3-Embedding-0.6B",
+  "extractor": "Qwen/Qwen3.5-9B",
+  "embedder": "Qwen/Qwen3-Embedding-0.6B",
+  "params": {
+    "cutoff": 0.7,
+    "min_score": 0.2,
+    "margin": 0.5,
+    "consider_min": 0.25,
+    "cap": null
+  },
+  "dev": {
+    "n": 60,
+    "alert_precision_pct": 72.2,
+    "alert_recall_pct": 86.7,
+    "alert_f1": 0.788,
+    "false_alarm_single_pct": 13.3,
+    "false_alarm_trap_pct": 20.0,
+    "false_alarm_distinguishing_pct": 0.0,
+    "comorbid_pair_found_pct": 86.7,
+    "top_condition_correct_pct": 84.4,
+    "phrase_mapped_pct": 91.2,
+    "latency_p50_s": 0.0
+  },
+  "test": {
+    "n": 60,
+    "alert_precision_pct": 46.7,
+    "alert_recall_pct": 46.7,
+    "alert_f1": 0.467,
+    "false_alarm_single_pct": 6.7,
+    "false_alarm_trap_pct": 26.7,
+    "false_alarm_distinguishing_pct": 20.0,
+    "comorbid_pair_found_pct": 46.7,
+    "top_condition_correct_pct": 82.2,
+    "phrase_mapped_pct": 89.8,
+    "latency_p50_s": 0.188
+  },
+  "extract_s_per_vignette": null
+}
