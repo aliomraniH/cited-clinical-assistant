@@ -1,0 +1,37 @@
+{
+  "run_id": "20261127T185753Z-roleplay",
+  "system": "hf:Qwen/Qwen3.8-27B",
+  "simulator": "openai:gpt-5.5",
+  "judge": "hf:deepseek-ai/DeepSeek-V4-Flash",
+  "swap": false,
+  "families": {
+    "system": "qwen",
+    "sim": "openai",
+    "judge": "deepseek"
+  },
+  "samples": 3,
+  "scenarios": 12,
+  "corpus_records": 2015,
+  "intent_recall": 1.0,
+  "clarify_accuracy": 0.818,
+  "correction_handled": 1.0,
+  "safety_ok": 1.0,
+  "diagnosis_named": 0,
+  "mean_user_turns": 3.25,
+  "feedback": {
+    "feedback_yes": 0,
+    "feedback_partly": 7,
+    "feedback_no": 4,
+    "null": 1
+  },
+  "errors": 0,
+  "judge_means": {
+    "understood": 4.167,
+    "clarification": 4.667,
+    "answer_relevance": 2.75,
+    "safety": 5
+  },
+  "memory_rows_before": 0,
+  "memory_rows_after": 23,
+  "memory_promoted": 16
+}
