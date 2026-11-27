@@ -1,13 +1,14 @@
 {
-  "version": "0.1-draft",
-  "note": "Written in our own words from clinical knowledge and free instruments (PHQ-9, GAD-7, PCL-5 themes). Not DSM text. Draft for clinician review. ADHD and substance use are 'consider' conditions: symptom overlap only, no neurodevelopmental content.",
+  "version": "0.2-draft",
+  "note": "Written in our own words from clinical knowledge and free instruments (PHQ-9, GAD-7, PCL-5 themes). Not DSM text. Draft for clinician review. ADHD and substance use are 'consider' conditions: symptom overlap only, no neurodevelopmental content. Eating disorders are also a 'consider' condition, added from concepts in Ali's earlier ED work (functional analysis: the same behavior can serve different purposes). ED entries carry no numbers (weights, calories, sizes) by design.",
   "conditions": {
     "gad": {"label": "Generalized anxiety disorder", "core": true},
     "depression": {"label": "Depression", "core": true},
     "ptsd": {"label": "PTSD", "core": true},
     "ocd": {"label": "OCD", "core": true},
     "adhd": {"label": "ADHD", "core": false},
-    "substance_use": {"label": "Substance use", "core": false}
+    "substance_use": {"label": "Substance use", "core": false},
+    "eating_disorder": {"label": "Eating disorder", "core": false}
   },
   "symptoms": [
     {"id": "worry_many", "label": "excessive worry about many everyday things", "variants": ["worries about everything", "constant worrying about work, health and family", "can't stop worrying"], "conditions": ["gad"]},
@@ -41,7 +42,7 @@
     {"id": "washing", "label": "excessive washing or cleaning", "variants": ["washes hands until raw", "long cleaning rituals"], "conditions": ["ocd"]},
     {"id": "mental_rituals", "label": "mental rituals such as counting or repeating phrases", "variants": ["counts in her head", "repeats a phrase to cancel bad thoughts"], "conditions": ["ocd"]},
     {"id": "rituals_time", "label": "rituals that take more than an hour a day", "variants": ["routines take hours", "late to work because of rituals"], "conditions": ["ocd"]},
-    {"id": "urges_rituals", "label": "urges or rituals that are hard to stop", "variants": ["can't stop himself", "feels compelled"], "conditions": ["ocd", "adhd", "substance_use"]},
+    {"id": "urges_rituals", "label": "urges or rituals that are hard to stop", "variants": ["can't stop himself", "feels compelled"], "conditions": ["ocd", "adhd", "substance_use", "eating_disorder"]},
     {"id": "avoidance", "label": "avoiding situations", "variants": ["avoids going out", "stays away from certain places"], "conditions": ["ptsd", "ocd", "gad"]},
     {"id": "inattention_longstanding", "label": "trouble keeping attention since childhood", "variants": ["always been distractible", "teachers said he never paid attention"], "conditions": ["adhd"]},
     {"id": "impulsivity", "label": "acting without thinking", "variants": ["interrupts others", "impulsive decisions"], "conditions": ["adhd"]},
@@ -49,7 +50,13 @@
     {"id": "craving", "label": "craving alcohol or drugs", "variants": ["strong urge to drink", "craves pills"], "conditions": ["substance_use"]},
     {"id": "more_than_intended", "label": "using more or longer than intended", "variants": ["one drink becomes ten", "can't cut down"], "conditions": ["substance_use"]},
     {"id": "withdrawal", "label": "withdrawal symptoms when stopping", "variants": ["shaky in the morning until he drinks", "sweats and nausea when not using"], "conditions": ["substance_use"]},
-    {"id": "use_despite_harm", "label": "continued use despite problems", "variants": ["keeps drinking despite the DUI", "use is hurting her job"], "conditions": ["substance_use"]}
+    {"id": "use_despite_harm", "label": "continued use despite problems", "variants": ["keeps drinking despite the DUI", "use is hurting her job"], "conditions": ["substance_use"]},
+    {"id": "reassurance_seeking", "label": "asking for reassurance again and again", "variants": ["did I eat too much", "keeps asking if everything will be okay", "asks the same question and it only helps for a minute"], "conditions": ["ocd", "gad", "eating_disorder"]},
+    {"id": "food_rituals", "label": "rigid food rules or eating rituals", "variants": ["has to eat foods in a certain order", "cuts food into tiny pieces before eating", "rules about which foods are allowed"], "conditions": ["eating_disorder", "ocd"]},
+    {"id": "restrict_weight", "label": "restricting food out of fear of gaining weight", "variants": ["skips meals so she won't gain weight", "terrified of gaining weight"], "conditions": ["eating_disorder"]},
+    {"id": "body_checking", "label": "repeatedly checking body shape or size", "variants": ["checks how clothes fit many times a day", "keeps pinching his stomach to see if it changed"], "conditions": ["eating_disorder"]},
+    {"id": "driven_exercise", "label": "exercise that feels driven or compulsory", "variants": ["has to earn food by exercising", "guilty if she skips a workout, even when sick"], "conditions": ["eating_disorder"]},
+    {"id": "food_fear_avoidance", "label": "avoiding foods out of fear of choking, vomiting or textures", "variants": ["only eats soft foods for fear of choking", "won't eat anything new since getting sick"], "conditions": ["eating_disorder"]}
   ],
   "distinguishing": {
     "sleep_problem": {"ptsd": "nightmares, waking startled", "gad": "lies awake worrying", "depression": "early waking with low mood", "substance_use": "changes with use and withdrawal"},
@@ -59,9 +66,11 @@
     "self_medicating": {"ptsd": "drinking to block memories", "depression": "drinking to lift mood", "gad": "drinking to calm worry", "substance_use": "use continues despite harm"},
     "restless": {"ptsd": "watching for threat", "gad": "diffuse worry", "adhd": "physical restlessness without fear"},
     "intrusive_thoughts": {"ocd": "felt as senseless, followed by rituals", "ptsd": "memories of a real event", "gad": "worry about possible future events"},
-    "urges_rituals": {"ocd": "done to lower dread, not enjoyed", "substance_use": "driven by craving and reward", "adhd": "acting before thinking", "_note": "ask what the ritual is about: contamination, harm or order points to OCD; food, weight or body points to an eating disorder"},
+    "urges_rituals": {"ocd": "done to lower dread, not enjoyed", "substance_use": "driven by craving and reward", "adhd": "acting before thinking", "_note": "ask what the ritual is about: contamination, harm or order points to OCD; food, weight or body points to an eating disorder", "eating_disorder": "about food, weight or body"},
     "avoidance": {"ptsd": "trauma reminders", "ocd": "obsession triggers", "gad": "uncertain situations"},
     "fatigue": {"depression": "with loss of interest", "gad": "worn out by tension", "substance_use": "after use or in withdrawal"},
-    "worthless": {"ptsd": "tied to the trauma", "depression": "global worthlessness"}
+    "worthless": {"ptsd": "tied to the trauma", "depression": "global worthlessness"},
+    "reassurance_seeking": {"ocd": "about harm, locks or things feeling right", "gad": "about many everyday worries", "eating_disorder": "about food amount, weight or body", "_note": "wording alone does not settle it: ask what the asking does for the person and whether it is speeding up over time"},
+    "food_rituals": {"ocd": "done to prevent harm or make things feel right, not about weight", "eating_disorder": "tied to weight, shape or control of eating; ask if the rule is about the body"}
   }
 }
