@@ -55,7 +55,7 @@ Or point any MCP client at the hosted app: `https://<space>.hf.space/mcp/` (with
 | GitHub Pages + separate backend | Free static page | Pages can't hold the HF token, so a second host (Render, Vercel) is needed for the API |
 | Claude artifact chat page | Shared by link on claude.ai | Still needs the hosted API for retrieval and SapBERT |
 
-Deploy: `.github/workflows/deploy-space.yml` runs the tests, then uploads `app.py`, `requirements.txt`, `src/`, `config/` and the corpus PMID list to `Aliomrani6/cited-clinical-assistant`. On first start the Space rebuilds the 2,015-record corpus from PubMed.
+Deploy: `.github/workflows/deploy-space.yml` runs the tests, then uploads `app.py`, `requirements.txt`, `src/`, `config/` and the corpus PMID list to `Aliomrani6/cited-clinical-assistant`. The Space is created **private** until a clinician has reviewed the symptom map; make it public in the Space settings after that. On first start the Space rebuilds the 2,015-record corpus from PubMed.
 
 Setup once:
 1. Create a Hugging Face **write** token (huggingface.co/settings/tokens) and save it as the GitHub repository secret `HF_TOKEN`.

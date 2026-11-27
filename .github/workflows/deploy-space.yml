@@ -9,6 +9,9 @@ on:
 
 env:
   HF_SPACE: Aliomrani6/cited-clinical-assistant
+  # A new Space is created private: the symptom map needs clinician review before the site is public.
+  # Make it public in the Space settings once reviewed; this flag only applies when the Space is first created.
+  HF_SPACE_PRIVATE: "true"
 
 jobs:
   test:
@@ -44,7 +47,8 @@ jobs:
           from huggingface_hub import HfApi
           api = HfApi(token=os.environ["HF_TOKEN"])
           space = os.environ["HF_SPACE"]
-          api.create_repo(space, repo_type="space", space_sdk="gradio", exist_ok=True)
+          api.create_repo(space, repo_type="space", space_sdk="gradio", exist_ok=True,
+                          private=os.environ.get("HF_SPACE_PRIVATE", "true") == "true")
           api.upload_folder(folder_path="_space", repo_id=space, repo_type="space",
                             commit_message=f"Deploy {os.environ['GITHUB_SHA'][:7]} from GitHub",
                             delete_patterns=["src/**", "config/**"])
