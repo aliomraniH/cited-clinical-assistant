@@ -1,0 +1,290 @@
+<title>Architecture Coach</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a study bench. Left column = today's session; right column = curriculum map; below = timeline and idea board. */
+:root {
+  --bg: #f4f6f8; --panel: #ffffff; --fg: #17202b; --muted: #5b6876; --line: #dde3ea;
+  --accent: #0e7490; --accent-soft: #e0f2f7;
+  --solid: #15803d; --partial: #b45309; --gap: #b91c1c; --open: #2563eb; --none: #94a3b8;
+  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f151c; --panel: #16202a; --fg: #e5ebf1; --muted: #93a1b0; --line: #26323e;
+  --accent: #38bdf8; --accent-soft: #10303f;
+  --solid: #4ade80; --partial: #fbbf24; --gap: #f87171; --open: #60a5fa; --none: #64748b; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f151c; --panel: #16202a; --fg: #e5ebf1; --muted: #93a1b0; --line: #26323e;
+  --accent: #38bdf8; --accent-soft: #10303f;
+  --solid: #4ade80; --partial: #fbbf24; --gap: #f87171; --open: #60a5fa; --none: #64748b; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 22px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-size: 1.9rem; letter-spacing: -0.01em; }
+h2 { font-size: 1.15rem; }
+h3 { font-size: 1rem; }
+.lede { color: var(--muted); max-width: 68ch; margin: 6px 0 0; }
+kbd, code { font-family: var(--mono); font-size: 0.85em; background: var(--accent-soft); color: var(--fg); padding: 1px 6px; border-radius: 4px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.eyebrow { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pill { font-family: var(--mono); font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.s-solid { color: var(--solid); } .s-partial, .s-review { color: var(--partial); } .s-gap { color: var(--gap); }
+.s-open { color: var(--open); } .s-none { color: var(--none); }
+.phases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.phase { border-top: 3px solid var(--line); padding-top: 6px; font-size: 0.8rem; color: var(--muted); }
+.phase.done { border-color: var(--accent); color: var(--fg); }
+.qa { display: grid; gap: 10px; }
+.q { border-left: 3px solid var(--line); padding-left: 12px; display: grid; gap: 4px; }
+.q.v-solid { border-color: var(--solid); } .q.v-partial { border-color: var(--partial); } .q.v-gap { border-color: var(--gap); }
+.q .ask { font-weight: 600; }
+.q .ans { color: var(--muted); }
+.q .note { font-size: 0.88rem; }
+ul.points { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.tracks { display: grid; gap: 14px; }
+.track { display: grid; gap: 6px; }
+.topic { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; padding: 6px 8px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; background: none; color: inherit; font: inherit; text-align: left; width: 100%; }
+.topic:hover, .topic:focus-visible { border-color: var(--line); background: var(--accent-soft); outline: none; }
+.topic .t { min-width: 0; }
+.topic .id { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); margin-right: 6px; }
+.timeline { display: grid; gap: 0; }
+.tl { display: grid; grid-template-columns: 7.5em minmax(0, 1fr) auto; gap: 12px; padding: 9px 4px; border-bottom: 1px solid var(--line); cursor: pointer; background: none; border-left: 0; border-right: 0; border-top: 0; color: inherit; font: inherit; text-align: left; width: 100%; }
+.tl:hover, .tl:focus-visible, .tl[aria-current="true"] { background: var(--accent-soft); outline: none; }
+.tl .d { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ideas { display: grid; gap: 8px; }
+.idea { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.idea .meta { font-size: 0.78rem; color: var(--muted); }
+form.add { display: flex; gap: 8px; flex-wrap: wrap; }
+input[type=text], select { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; }
+input[type=text] { flex: 1 1 260px; min-width: 0; }
+button.primary { font: inherit; font-weight: 600; background: var(--accent); color: var(--panel); border: 0; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.empty { color: var(--muted); font-size: 0.92rem; }
+.start { display: grid; gap: 4px; font-size: 0.9rem; }
+.msg { font-size: 0.85rem; color: var(--muted); min-height: 1.2em; }
+.legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.78rem; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Interview prep · models and architectures</div>
+    <h1>Architecture Coach</h1>
+    <p class="lede">A coaching log for the cited clinical assistant build. Each session checks what you already know, teaches one topic using this project's own code, tests it with one applied question, then turns into brainstorming. Start one in a Claude chat by typing <kbd>coach</kbd>, <kbd>coach m3</kbd> for a chosen topic, or <kbd>brainstorm</kbd>.</p>
+  </header>
+
+  <div class="grid2">
+    <section class="panel" aria-labelledby="sess-h">
+      <div class="row" style="justify-content:space-between">
+        <h2 id="sess-h">Session</h2>
+        <span id="sess-badge"></span>
+      </div>
+      <div id="session"><p class="empty" id="loading">Loading sessions…</p></div>
+    </section>
+
+    <section class="panel" aria-labelledby="map-h">
+      <h2 id="map-h">Curriculum map</h2>
+      <div class="legend">
+        <span class="pill s-none">not started</span><span class="pill s-open">in progress</span>
+        <span class="pill s-review">review</span><span class="pill s-solid">solid</span>
+      </div>
+      <div class="tracks" id="tracks"></div>
+    </section>
+  </div>
+
+  <div class="grid2">
+    <section class="panel" aria-labelledby="tl-h">
+      <h2 id="tl-h">Timeline</h2>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="idea-h">
+      <h2 id="idea-h">Idea board</h2>
+      <form class="add" id="addIdea">
+        <label for="ideaText" class="eyebrow" style="flex-basis:100%">Add an idea to explore</label>
+        <input type="text" id="ideaText" maxlength="300" placeholder="e.g. try MedCPT dense retrieval next to BM25">
+        <button class="primary" type="submit">Add idea</button>
+      </form>
+      <div class="msg" id="ideaMsg" role="status"></div>
+      <div class="ideas" id="ideas"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const CURRICULUM = [
+  { track: "This system", items: [
+    ["a1", "RAG pipeline end to end", "BM25 → gate → generate → citation check (src/cca/answer.py)"],
+    ["a2", "Sparse vs dense retrieval", "BM25 baseline, MedCPT, hybrid search"],
+    ["a3", "Citation checking and faithfulness", "code-checked citations vs judge-checked support"],
+    ["a4", "Entity embeddings for symptoms", "SapBERT CLS pooling, symptom map matching"],
+    ["a5", "Abstention and retrieval gating", "min top score, INSUFFICIENT_EVIDENCE"],
+    ["a6", "Safety layer", "risk gate, no-diagnosis rule, crisis routing"],
+  ]},
+  { track: "Models", items: [
+    ["m1", "Transformers and attention", "tokens, context window, KV cache"],
+    ["m2", "Decoder LLMs and reasoning models", "thinking tokens and the empty-answer bug"],
+    ["m3", "Encoders and contrastive embeddings", "PubMedBERT, SapBERT, Qwen3-Embedding"],
+    ["m4", "Prompting vs RAG vs fine-tuning", "when LoRA is worth it"],
+    ["m5", "Serving and quantization", "Inference Providers, vLLM, Ollama, GGUF"],
+    ["m6", "Model size trade-offs", "Qwen3.5 9B vs Qwen3.8 27B baseline"],
+  ]},
+  { track: "Interfaces and agents", items: [
+    ["i1", "Model Context Protocol", "tools, resources, prompts, transports"],
+    ["i2", "APIs and agent cards", "OpenAPI, A2A agent card, auth"],
+    ["i3", "Multi-agent orchestration", "peer MCP servers, allowlists, untrusted output"],
+    ["i4", "Hosting and deployment", "HF Spaces, CPU vs GPU, secrets, cold start"],
+  ]},
+  { track: "Evaluation and operations", items: [
+    ["e1", "LLM-as-judge", "cross-family judges, judge token budgets"],
+    ["e2", "Eval set design", "answerable vs unanswerable, overlap traps"],
+    ["e3", "Overfitting and dev/test splits", "Qwen3-Embedding 0.79 dev vs 0.47 test"],
+    ["e4", "Monitoring and drift", "daily pull audits, run registry"],
+  ]},
+];
+const TOPIC = Object.fromEntries(CURRICULUM.flatMap(t => t.items.map(([id, name, hint]) => [id, { id, name, hint, track: t.track }])));
+const PHASES = ["Check", "Teach", "Apply", "Brainstorm"];
+const IDEA_STATUS = ["new", "exploring", "parked", "built"];
+
+let sessions = [], ideas = [], selected = null, db = null;
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) n.append(k instanceof Node ? k : document.createTextNode(String(k)));
+  return n;
+}
+const str = v => (typeof v === "string" ? v : v == null ? "" : String(v));
+const arr = v => (Array.isArray(v) ? v : []);
+const VERDICT = { solid: "solid", partial: "partial", gap: "gap" };
+
+function topicStatus(id) {
+  const mine = sessions.filter(s => s.topicId === id);
+  if (!mine.length) return "none";
+  const last = mine[mine.length - 1];
+  if (last.status !== "done") return "open";
+  const vs = [...arr(last.check), last.apply].filter(Boolean).map(q => q.verdict);
+  return vs.length && vs.every(v => v === "solid") ? "solid" : "review";
+}
+const STATUS_LABEL = { none: "not started", open: "in progress", review: "review", solid: "solid" };
+
+function renderTracks() {
+  const box = document.getElementById("tracks"); box.replaceChildren();
+  for (const t of CURRICULUM) {
+    box.append(el("div", { class: "track" }, el("div", { class: "eyebrow" }, t.track),
+      t.items.map(([id, name, hint]) => {
+        const st = topicStatus(id);
+        return el("button", { class: "topic", type: "button", title: hint,
+          onclick: () => { const s = [...sessions].reverse().find(x => x.topicId === id); if (s) { selected = s.id; render(); } } },
+          el("span", { class: "t" }, el("span", { class: "id" }, id), name),
+          el("span", { class: "pill s-" + st }, STATUS_LABEL[st]));
+      })));
+  }
+}
+
+function qBlock(q, label) {
+  const v = VERDICT[q.verdict] || "";
+  return el("div", { class: "q" + (v ? " v-" + v : "") },
+    el("div", { class: "row" }, el("span", { class: "eyebrow" }, label), v ? el("span", { class: "pill s-" + v }, v) : null),
+    el("div", { class: "ask" }, str(q.q)),
+    q.answer ? el("div", { class: "ans" }, "Your answer: " + str(q.answer)) : el("div", { class: "ans" }, "Waiting for your answer in chat."),
+    q.note ? el("div", { class: "note" }, str(q.note)) : null);
+}
+
+function renderSession() {
+  const box = document.getElementById("session"), badge = document.getElementById("sess-badge");
+  box.replaceChildren(); badge.replaceChildren();
+  const s = sessions.find(x => x.id === selected) || sessions[sessions.length - 1];
+  if (!s) {
+    box.append(el("div", { class: "start" },
+      el("p", { class: "empty" }, "No sessions yet. The first one shows up here as soon as it starts in chat."),
+      el("p", {}, "Type ", el("kbd", {}, "coach"), " in a Claude chat. Claude picks the first topic you haven't covered (a1, the RAG pipeline), asks two or three questions to see where you are, teaches, checks with one applied question, and logs it here.")));
+    return;
+  }
+  const t = TOPIC[s.topicId] || { id: str(s.topicId), name: str(s.topicTitle) || "Open brainstorm", track: "" };
+  badge.append(el("span", { class: "pill " + (s.status === "done" ? "s-solid" : "s-open") }, s.status === "done" ? "done" : "in progress"));
+  const reached = Math.max(0, PHASES.indexOf(str(s.phase)));
+  box.append(
+    el("div", {}, el("div", { class: "eyebrow" }, `Session ${str(s.n)} · ${str(s.date)} · ${t.track}`),
+      el("h3", {}, `${t.id} ${t.name}`)),
+    el("div", { class: "phases" }, PHASES.map((p, i) => el("div", { class: "phase" + (s.status === "done" || i <= reached ? " done" : "") }, p))));
+  const checks = arr(s.check);
+  if (checks.length) box.append(el("div", { class: "qa" }, checks.map((q, i) => qBlock(q, "Check " + (i + 1)))));
+  if (arr(s.taught).length) box.append(el("div", {}, el("div", { class: "eyebrow" }, "Key points taught"),
+    el("ul", { class: "points" }, arr(s.taught).map(p => el("li", {}, str(p))))));
+  if (s.apply && s.apply.q) box.append(el("div", { class: "qa" }, qBlock(s.apply, "Apply")));
+  if (arr(s.gaps).length) box.append(el("div", {}, el("div", { class: "eyebrow" }, "To review"),
+    el("ul", { class: "points" }, arr(s.gaps).map(p => el("li", {}, str(p))))));
+  if (s.next) box.append(el("div", {}, el("div", { class: "eyebrow" }, "Next"), el("div", {}, str(s.next))));
+}
+
+function renderTimeline() {
+  const box = document.getElementById("timeline"); box.replaceChildren();
+  if (!sessions.length) { box.append(el("p", { class: "empty" }, "Past sessions appear here, newest first.")); return; }
+  const cur = (sessions.find(x => x.id === selected) || sessions[sessions.length - 1]).id;
+  for (const s of [...sessions].reverse()) {
+    const t = TOPIC[s.topicId];
+    const vs = [...arr(s.check), s.apply].filter(q => q && q.verdict).map(q => q.verdict);
+    const score = vs.length ? `${vs.filter(v => v === "solid").length}/${vs.length} solid` : (s.status === "done" ? "done" : "in progress");
+    box.append(el("button", { class: "tl", type: "button", "aria-current": String(s.id === cur), onclick: () => { selected = s.id; render(); } },
+      el("span", { class: "d" }, str(s.date)),
+      el("span", {}, t ? `${t.id} ${t.name}` : str(s.topicTitle) || "Brainstorm"),
+      el("span", { class: "pill " + (vs.includes("gap") ? "s-gap" : vs.length && vs.every(v => v === "solid") ? "s-solid" : "s-open") }, score)));
+  }
+}
+
+function renderIdeas() {
+  const box = document.getElementById("ideas"); box.replaceChildren();
+  if (!ideas.length) { box.append(el("p", { class: "empty" }, "No ideas yet. Brainstorm sessions add theirs here, and you can add your own above.")); return; }
+  const order = { exploring: 0, new: 1, parked: 2, built: 3 };
+  for (const it of [...ideas].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9) || str(b.createdAt).localeCompare(str(a.createdAt)))) {
+    const sel = el("select", { id: "st-" + it.id, "aria-label": "Status", onchange: e => setIdeaStatus(it.id, e.target.value) },
+      IDEA_STATUS.map(s => { const o = el("option", { value: s }, s); if (s === it.status) o.selected = true; return o; }));
+    if (!db) sel.disabled = true;
+    box.append(el("div", { class: "idea" },
+      el("div", {}, el("div", {}, str(it.text)),
+        el("div", { class: "meta" }, [it.source === "ali" ? "From you" : "From Claude", it.topicId && TOPIC[it.topicId] ? "· " + TOPIC[it.topicId].name : "", it.createdAt ? "· " + str(it.createdAt).slice(0, 10) : ""].join(" "))),
+      sel));
+  }
+}
+
+function render() { renderTracks(); renderSession(); renderTimeline(); renderIdeas(); }
+
+async function setIdeaStatus(id, status) {
+  if (!db) return;
+  try { await db.doc("ideas/" + id).update({ status }); }
+  catch (e) { document.getElementById("ideaMsg").textContent = "Couldn't save the status. " + (e && e.message ? e.message : ""); }
+}
+
+document.getElementById("addIdea").addEventListener("submit", async e => {
+  e.preventDefault();
+  const input = document.getElementById("ideaText"), msg = document.getElementById("ideaMsg");
+  const text = input.value.trim();
+  if (!text) { msg.textContent = "Write the idea first."; return; }
+  if (!db) { msg.textContent = "Saving needs you to be signed in to claude.ai."; return; }
+  try {
+    await db.collection("ideas").add({ text, source: "ali", status: "new", createdAt: new Date().toISOString() });
+    input.value = ""; msg.textContent = "Added. Claude will pick it up in the next brainstorm.";
+  } catch (err) { msg.textContent = "Couldn't add the idea. " + (err && err.message ? err.message : ""); }
+});
+
+render();
+(async () => {
+  const timer = setTimeout(() => { const l = document.getElementById("loading"); if (l) l.textContent = "Sessions are taking a while to load."; }, 10000);
+  try { db = await window.claude?.use?.("db"); } catch { db = null; }
+  if (!db) { clearTimeout(timer); const l = document.getElementById("loading"); if (l) l.textContent = "Sign in to claude.ai to see your sessions."; return; }
+  db.collection("sessions").onSnapshot(snap => {
+    clearTimeout(timer);
+    sessions = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (Number(a.n) || 0) - (Number(b.n) || 0));
+    render();
+  }, () => { clearTimeout(timer); const l = document.getElementById("loading"); if (l) l.textContent = "Couldn't load sessions."; });
+  db.collection("ideas").onSnapshot(snap => { ideas = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderIdeas(); }, () => {});
+})();
+</script>

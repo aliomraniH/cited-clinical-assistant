@@ -1,0 +1,52 @@
+# Hybrid hosting: code and tests live on GitHub; every push to main that passes tests
+# is uploaded to the Hugging Face Space. Needs repository secret HF_TOKEN (a write token).
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  HF_SPACE: Aliomrani6/cited-clinical-assistant
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev,serve]"
+      - run: pytest -q
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "huggingface_hub>=0.25"
+      - name: Upload app to the Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then echo "HF_TOKEN secret not set; skipping deploy"; exit 0; fi
+          mkdir -p _space
+          cp -r app.py requirements.txt src config eval/corpus_pmids.txt _space/ 2>/dev/null || true
+          mkdir -p _space/eval && mv _space/corpus_pmids.txt _space/eval/
+          cp deploy/space_README.md _space/README.md
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          space = os.environ["HF_SPACE"]
+          api.create_repo(space, repo_type="space", space_sdk="gradio", exist_ok=True)
+          api.upload_folder(folder_path="_space", repo_id=space, repo_type="space",
+                            commit_message=f"Deploy {os.environ['GITHUB_SHA'][:7]} from GitHub",
+                            delete_patterns=["src/**", "config/**"])
+          print(f"https://huggingface.co/spaces/{space}")
+          PY
