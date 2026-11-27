@@ -55,10 +55,10 @@ Or point any MCP client at the hosted app: `https://<space>.hf.space/mcp/` (with
 | GitHub Pages + separate backend | Free static page | Pages can't hold the HF token, so a second host (Render, Vercel) is needed for the API |
 | Claude artifact chat page | Shared by link on claude.ai | Still needs the hosted API for retrieval and SapBERT |
 
-Deploy: `.github/workflows/deploy-space.yml` runs the tests, then uploads `app.py`, `requirements.txt`, `src/`, `config/` and the corpus PMID list to `Aliomrani6/cited-clinical-assistant`. The Space is created **private** until a clinician has reviewed the symptom map; make it public in the Space settings after that. On first start the Space rebuilds the 2,015-record corpus from PubMed.
+Deploy: the Space uses the Docker SDK (`deploy/Dockerfile`), because the Gradio SDK image installs `gradio[mcp]`, which pins `mcp<2`. `.github/workflows/deploy-space.yml` runs the tests, then uploads `app.py`, `requirements.txt`, `src/`, `config/` and the corpus PMID list to `Aliomrani6/cited-clinical-assistant`. The Space is created **private** until a clinician has reviewed the symptom map; make it public in the Space settings after that. On first start the Space rebuilds the 2,015-record corpus from PubMed.
 
 Setup once:
-1. Create a Hugging Face **write** token (huggingface.co/settings/tokens) and save it as the GitHub repository secret `HF_TOKEN`.
+1. Save a Hugging Face token with write access to the Space as the GitHub repository secret `HF_TOKEN` (needed for automatic deploys; the first deploy on 2026-11-27 was done by hand).
 2. After the first deploy, in the Space settings add secrets `CCA_API_KEY` (an HF token with Inference Providers permission) and, optionally, `CCA_API_TOKEN` to protect `/v1` and `/mcp`.
 
 ## 3. HTTP API

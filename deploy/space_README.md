@@ -3,8 +3,8 @@ title: Cited Clinical Assistant
 emoji: 📚
 colorFrom: blue
 colorTo: yellow
-sdk: gradio
-app_file: app.py
+sdk: docker
+app_port: 7860
 pinned: false
 short_description: Cited PubMed answers + symptom overlap check (research demo)
 ---

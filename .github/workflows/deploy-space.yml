@@ -42,12 +42,13 @@ jobs:
           cp -r app.py requirements.txt src config eval/corpus_pmids.txt _space/ 2>/dev/null || true
           mkdir -p _space/eval && mv _space/corpus_pmids.txt _space/eval/
           cp deploy/space_README.md _space/README.md
+          cp deploy/Dockerfile _space/Dockerfile
           python - <<'PY'
           import os
           from huggingface_hub import HfApi
           api = HfApi(token=os.environ["HF_TOKEN"])
           space = os.environ["HF_SPACE"]
-          api.create_repo(space, repo_type="space", space_sdk="gradio", exist_ok=True,
+          api.create_repo(space, repo_type="space", space_sdk="docker", exist_ok=True,
                           private=os.environ.get("HF_SPACE_PRIVATE", "true") == "true")
           api.upload_folder(folder_path="_space", repo_id=space, repo_type="space",
                             commit_message=f"Deploy {os.environ['GITHUB_SHA'][:7]} from GitHub",
