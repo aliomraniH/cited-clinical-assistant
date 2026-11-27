@@ -30,7 +30,7 @@ refinement, answer, feedback). When the session ends, each reading gets a value 
 
 | Signal | Weight |
 |---|---|
-| "Was this helpful?" yes / partly / no | +0.6 / +0.2 / -0.6 |
+| "Was this helpful?" yes / partly / no | +0.6 / +0.2 / -0.6 (x0.25 for a reading the user already confirmed: it rates the answer, not the understanding; also kept as `answer_feedback`) |
 | Confirm accepted | +0.5 |
 | Picked / not picked in a clarifying question | +0.3 / -0.3 |
 | Follow-up that builds on the answer | +0.3 |

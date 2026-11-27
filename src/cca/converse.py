@@ -262,12 +262,21 @@ class Conversation:
             return
         for r in new:
             r.id = ""
+        for r in new:
+            r._pmids = [h.doc["pmid"] for h in self.retriever.search(r.query(), k=self.k)]  # type: ignore[attr-defined]
         corrected = []
         for o in old:
             free = [r for r in new if not r.id]
-            match = max(free, key=lambda r: jaccard(_words(r.query()), _words(o.query())), default=None)
-            if match is not None and jaccard(_words(match.query()), _words(o.query())) >= 0.6:
-                match.id = o.id        # same reading survived the correction
+            match = max(free, key=lambda r: _likeness(r, o), default=None)
+            if match is not None and _likeness(match, o) >= 0.6:
+                match.id = o.id        # same reading survived the correction (possibly reworded)
+                if match.paraphrase != o.paraphrase:
+                    reg = self.session.readings.get(o.id)
+                    if reg is not None:
+                        reg.update(paraphrase=match.paraphrase, terms=match.terms, intent_type=match.intent_type)
+                    self.session.record_query_change({"id": o.id, "paraphrase": o.paraphrase, "query": o.query()},
+                                                     {"id": o.id, "paraphrase": match.paraphrase, "query": match.query()},
+                                                     why="reworded: " + text)
             else:
                 corrected.append(o)
         new = [r for r in new if r.confidence >= self.min_conf or r.id] or new[:1]
@@ -349,6 +358,26 @@ class Conversation:
         self.session.log("system", "reply", text=text, state=self.state)
         return {"session_id": self.session.session_id, "state": self.state, "reply": text,
                 "readings": [r.to_dict() for r in self.readings], **extra}
+
+
+_STOP = frozenset("a an and are as at be by can could do does for from has have how i if in is it its may me my of on "
+                  "or should the their them they this to was what when whether which who why with you your about more "
+                  "help helps".split())
+
+
+def _content(text: str) -> set[str]:
+    return {w for w in _words(text) if w not in _STOP and len(w) > 2}
+
+
+def _likeness(a: Interpretation, b: Interpretation) -> float:
+    """How likely two readings are the same question reworded: the best of query-word Jaccard (scaled),
+    content-word overlap of the paraphrases, and overlap of their top-5 evidence."""
+    words = jaccard(_words(a.query()), _words(b.query())) / 0.6
+    ca, cb = _content(a.paraphrase), _content(b.paraphrase)
+    content = len(ca & cb) / min(len(ca), len(cb)) if ca and cb else 0.0
+    pa, pb = getattr(a, "_pmids", [])[:5], getattr(b, "_pmids", [])[:5]
+    evidence = jaccard(set(pa), set(pb)) if pa and pb else 0.0
+    return min(1.0, max(words * 0.5, content * 5 / 6, evidence))
 
 
 def _pick(text: str, n: int) -> set[int]:

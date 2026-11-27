@@ -9,7 +9,9 @@ Scored (phrasing -> reading) pairs go into the PhrasingMemory. The interpreter r
 closest past phrasings as examples, so it learns how people word similar things.
 
 Signals and their weights:
-  explicit feedback "yes"            +0.6 to every answered reading ("partly" +0.2, "no" -0.6)
+  explicit feedback "yes"            +0.6 to every answered reading ("partly" +0.2, "no" -0.6);
+                                     x0.25 for readings the user already confirmed (it rates the answer, not
+                                     the understanding) and stored separately as answer_feedback
   confirm accepted unchanged         +0.5
   picked in a clarifying question    +0.3   (offered but not picked: -0.3)
   follow-up that builds on an answer +0.3
@@ -32,6 +34,7 @@ WEIGHTS = {
     "confirm_accepted": 0.5, "clarify_picked": 0.3, "clarify_not_picked": -0.3,
     "followup": 0.3, "dropped": -0.7, "corrected": -1.0, "rephrased": -0.4,
 }
+FEEDBACK_ON_CONFIRMED = 0.25
 MEMORY_VERSION = "pm-1"
 
 
@@ -79,6 +82,7 @@ class ScoredPair:
     interp_id: str
     source: str
     version: str = MEMORY_VERSION
+    answer_feedback: str | None = None   # what the user said about the answer, kept apart from the reading's value
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -144,14 +148,25 @@ def score_session(session: Session, judge=None) -> list[ScoredPair]:
     """Value per reading from logged signals; the judge (optional) scores readings with no signal."""
     totals: dict[str, float] = {k: 0.0 for k in session.readings}
     reasons: dict[str, list[str]] = {k: [] for k in session.readings}
+    confirmed = {i for e in session.events if e.kind == "signal" and e.payload["name"] in ("confirm_accepted", "clarify_picked")
+                 for i in e.payload["interp_ids"]}
+    answer_feedback: dict[str, str] = {}
     for e in session.events:
         if e.kind != "signal":
             continue
-        w = WEIGHTS.get(e.payload["name"], 0.0)
+        name = e.payload["name"]
         for iid in e.payload["interp_ids"]:
-            if iid in totals:
-                totals[iid] += w
-                reasons[iid].append(f"{e.payload['name']} ({w:+.1f})")
+            if iid not in totals:
+                continue
+            w = WEIGHTS.get(name, 0.0)
+            if name.startswith("feedback_"):
+                answer_feedback[iid] = name
+                # "Was this helpful?" rates the answer. For a reading the user already confirmed, a poor answer
+                # is a retrieval problem, not a misunderstanding, so it only nudges the reading's value.
+                if iid in confirmed:
+                    w *= FEEDBACK_ON_CONFIRMED
+            totals[iid] += w
+            reasons[iid].append(f"{name} ({w:+.2f})")
     unscored = [k for k, r in reasons.items() if not r]
     if judge is not None and unscored:
         for iid, val, why in _judge_scores(session, unscored, judge):
@@ -161,7 +176,8 @@ def score_session(session: Session, judge=None) -> list[ScoredPair]:
     for iid, d in session.readings.items():
         val = max(-1.0, min(1.0, totals[iid]))
         pairs.append(ScoredPair(session.session_id, d["phrasing"], deidentify(d["paraphrase"]), d["intent_type"],
-                                d.get("terms", []), round(val, 3), reasons[iid] or ["no signal"], iid, session.source))
+                                d.get("terms", []), round(val, 3), reasons[iid] or ["no signal"], iid, session.source,
+                                answer_feedback=answer_feedback.get(iid)))
     session.log("system", "end", scores={p.interp_id: p.value for p in pairs})
     session.ended = True
     return pairs

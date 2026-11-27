@@ -100,7 +100,7 @@ def test_multi_intent_confirm_then_answer_and_feedback():
     assert r["state"] == "answered" and "[PMID" in r["reply"] and "Was this helpful?" in r["reply"]
     c.respond("yes, thanks")
     pairs = {p.interp_id: p for p in c.end()}
-    assert all(p.value == 1.0 for p in pairs.values())  # confirm +0.5, feedback +0.6, clipped to 1
+    assert all(p.value == 0.65 and p.answer_feedback == "feedback_yes" for p in pairs.values())  # +0.5 confirm, +0.6x0.25
 
 
 def test_ambiguous_words_trigger_one_clarifying_question():
@@ -132,7 +132,7 @@ def test_correction_reinterprets_and_tracks_query_change():
     c.respond("i keep checking the stove, i barely sleep and drinking more")
     r = c.respond("no, I don't care about drinking, I meant what helps me sleep without pills")
     assert r["state"] == "confirm" and any("Non-drug" in x["paraphrase"] for x in r["readings"])
-    assert c.session.query_changes and c.session.query_changes[0]["why"].startswith("no, I don't")
+    assert any(q["why"].startswith("no, I don't") for q in c.session.query_changes)
     c.respond("yes")
     scores = {p.paraphrase: p.value for p in c.end()}
     assert scores["Is repeated checking after a trauma linked to it"] > 0  # survived the correction, same id
@@ -204,7 +204,7 @@ def test_yes_with_refinement_answers_without_asking_again():
     r = c.respond("yes, especially the checking and the sleep part please")
     assert r["state"] == "answered" and len(r["readings"]) == 2
     names = [e.payload["name"] for e in c.session.events if e.kind == "signal"]
-    assert "corrected" not in names and c.session.query_changes[0]["why"].startswith("refinement")
+    assert "corrected" not in names and any(q["why"].startswith(("refinement", "reworded")) for q in c.session.query_changes)
 
 
 def test_near_duplicate_readings_do_not_trigger_clarify():
@@ -277,3 +277,11 @@ def test_state_roundtrip_mid_clarify():
     c2 = Conversation.from_state(json.loads(json.dumps(c.to_state())), FakeChat(AMBIG), BM25(DOCS),
                                  samples=1, min_top_score=0.1, same_evidence=1.01)
     assert c2.respond("2")["state"] == "confirm" and len(c2.readings) == 1
+
+
+def test_reworded_reading_survives_correction():
+    from cca.converse import _likeness
+    a = Interpretation("o", "What helps reduce repeatedly re-reading emails before sending them?", [], [], .5)
+    b = Interpretation("o", "What helps with repeatedly re-reading emails before sending them?", [], ["checking"], .5)
+    c = Interpretation("o", "What helps reduce panic-like feelings?", [], [], .5)
+    assert _likeness(a, b) >= 0.6 > _likeness(a, c)
