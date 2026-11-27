@@ -42,3 +42,9 @@ def test_risk_gate_skips_overlap():
 def test_parse_phrases_formats():
     assert parse_phrases('["a b", "c"]') == ["a b", "c"]
     assert parse_phrases("[worries a lot]\n[tense]") == ["worries a lot", "tense"]
+
+
+def test_eating_disorder_is_consider_not_core():
+    r = agent().analyze("has to eat foods in a certain order; terrified of gaining weight; checks how clothes fit many times a day")
+    assert "eating_disorder" in r.consider and "eating_disorder" not in r.alert_conditions
+    assert r.top != "eating_disorder"
