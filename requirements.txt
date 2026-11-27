@@ -1,0 +1,10 @@
+# Runtime for the hosted app (Hugging Face Space). Local dev: pip install -e ".[dev,serve,overlap]"
+--extra-index-url https://download.pytorch.org/whl/cpu
+requests>=2.31
+numpy>=1.26
+fastapi>=0.110
+uvicorn>=0.29
+gradio>=5
+mcp>=2.0
+torch
+transformers>=4.40

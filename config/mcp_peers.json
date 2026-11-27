@@ -1,0 +1,12 @@
+{
+  "note": "Other MCP servers the assistant may consult for decision support. Only tools in allowed_tools can be called. Secrets go in environment variables named by headers_env, never in this file. Add a peer by copying the example and removing the leading underscore from its name.",
+  "peers": {
+    "_example_clinical_tool": {
+      "transport": "http",
+      "url": "https://example.org/mcp",
+      "headers_env": {"Authorization": "CLINICAL_TOOL_AUTH"},
+      "allowed_tools": ["lookup_guideline"],
+      "purpose": "Guideline lookup to set next to the literature answer"
+    }
+  }
+}

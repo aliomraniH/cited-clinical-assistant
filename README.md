@@ -13,6 +13,21 @@ A learning project: an assistant that answers clinical questions about generaliz
 | Answerer with checked citations | Working with any OpenAI-compatible endpoint (`scripts/ask.py`) |
 | Eval harness and live site | Planned |
 
+## Interfaces
+
+The assistant is reachable four ways, all backed by `src/cca/service.py` with the same safety rules (crisis routing, no diagnosis). Details in [docs/interfaces.md](docs/interfaces.md).
+
+```bash
+pip install -e ".[dev,serve,overlap]"
+python app.py                                   # chatbot at :7860, REST at /v1, MCP at /mcp/, agent card at /.well-known/agent-card.json
+python -m cca.interfaces.mcp_server             # MCP over stdio for Claude Desktop / Claude Code
+```
+
+1. **MCP server** that can consult other MCP servers (allowlisted in `config/mcp_peers.json`) for decision briefs.
+2. **Chatbot** (Gradio), deployed from GitHub to a Hugging Face Space by `.github/workflows/deploy-space.yml`.
+3. **HTTP API** with OpenAPI spec and an A2A-style agent card, for other agents.
+4. **Architecture Coach**: a Claude skill plus a [coaching page](https://claude.ai/artifact/4qhFi7M1ofhXWVCPc4Bu5z) for interview prep.
+
 ## Daily pull
 
 ```bash
