@@ -20,15 +20,23 @@ def tokenize(text: str) -> list[str]:
     return [t for t in _TOKEN.findall(text.lower()) if t not in STOPWORDS and len(t) > 1]
 
 
-def load_snapshots(snapshot_dir: Path) -> list[dict]:
-    """All rows from every snapshot; a PMID seen twice keeps its newest copy."""
+def load_snapshots(snapshot_dir: Path | list[Path]) -> list[dict]:
+    """All rows from every snapshot in one or more folders; a row seen twice keeps its newest copy.
+
+    PubMed rows are keyed by PMID; passage rows from other sources (full text, trials,
+    guidelines) carry a unique `id`, so several passages can share one citable PMID.
+    """
+    dirs = snapshot_dir if isinstance(snapshot_dir, (list, tuple)) else [snapshot_dir]
     rows: dict[str, dict] = {}
-    for path in sorted(snapshot_dir.glob("*.jsonl")):
-        with open(path) as f:
-            for line in f:
-                if line.strip():
-                    row = json.loads(line)
-                    rows[row["pmid"]] = row
+    for d in dirs:
+        for path in sorted(Path(d).glob("*.jsonl")):
+            with open(path) as f:
+                for line in f:
+                    if line.strip():
+                        row = json.loads(line)
+                        if row.get("synthetic_false"):  # devil-test items: quarantined, never indexed
+                            continue
+                        rows[row.get("id") or row["pmid"]] = row
     return list(rows.values())
 
 

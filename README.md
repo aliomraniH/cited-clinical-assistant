@@ -12,6 +12,8 @@ A learning project: an assistant that answers clinical questions about generaliz
 | Retrieval (BM25 baseline; MedCPT next) | Working (`src/cca/index.py`) |
 | Answerer with checked citations | Working with any OpenAI-compatible endpoint (`scripts/ask.py`) |
 | Eval harness and live site | Planned |
+| Full text, trials and VA/DoD guidelines | Working (`scripts/pull_sources.py`) |
+| Criteria cases and devil test | Pilot (`scripts/run_devil.py`) |
 
 ## Interfaces
 
@@ -51,6 +53,39 @@ python scripts/ask.py "Does prolonged exposure therapy reduce PTSD symptoms?" --
 The answerer sends the top passages, numbered, to the model and requires a citation such as `[2]` on every sentence. If the passages do not cover the question, the model must reply `INSUFFICIENT_EVIDENCE`. Questions whose best BM25 score is below `--min-score` are refused before the model is called. Code then checks each answer for uncited sentences and citations to passages that do not exist. Whether a cited passage really supports its sentence is left to the cross-family judge in the eval harness.
 
 Point `--base-url` (or `CCA_BASE_URL`, plus `CCA_API_KEY` if needed) at any OpenAI-compatible server, such as Ollama, vLLM, llama.cpp or Hugging Face Inference Providers, to swap models without changing code.
+
+## More sources
+
+`scripts/pull_sources.py` adds four sources beside the PubMed abstracts, all as passage rows that BM25 and the answerer already understand (config in `config/sources.json`, data in `data/sources/`, kept out of git):
+
+| Source | Route | What is kept |
+| --- | --- | --- |
+| PMC open-access full text | NCBI E-utilities (`db=pmc`) | Articles whose own licence statement is CC BY or CC0; others are dropped and counted |
+| Europe PMC open-access full text | Europe PMC REST API | Same licence rule; articles already pulled from PMC are skipped |
+| ClinicalTrials.gov | API v2 | Summary, eligibility and primary outcomes per study |
+| VA/DoD guidelines (PTSD 2023, MDD 2022, SUD 2021) | PDF from healthquality.va.gov | Page-level passages, cited as guideline + page |
+
+```bash
+pip install -e ".[dev,sources]"
+python scripts/pull_sources.py --per-topic 30           # all four sources
+python scripts/ask.py "Is trauma-focused therapy first line for PTSD?" --snapshots data/eval_corpus data/sources --retrieve-only
+```
+
+Full-text passages keep the paper's PMID as their citation, so several passages can cite one paper; trials cite their NCT id and guidelines cite `VADoD-PTSD-2023 p.45`.
+
+## Criteria cases and the devil test
+
+- `config/criteria.json`: diagnostic criteria for GAD, depression, PTSD, OCD (plus ADHD, substance use and eating disorders for overlap) **in our own words**, keyed by DSM-5-TR criterion letter. Not DSM text. Draft for clinician review.
+- `scripts/make_criteria_cases.py` writes `eval/criteria_cases.jsonl`: 20 synthetic vignettes that fit or miss one criterion (duration, symptom count, stressor, substance cause, or a better explanation such as PTSD instead of GAD). Code re-derives every label from the case facts and the thresholds, and builds the "why it fits / why not" text from the table. `--corpus` attaches the top passages from our sources as evidence.
+- `scripts/run_devil.py` runs the adversarial test. A model from another family (default `openai:gpt-5.5`) rewrites sentences from our sources into faithful paraphrases and one-fact edits; code builds wrong citations, made-up PMIDs, threshold changes in the criteria table, and loads `eval/untrusted_claims.jsonl`. The grounded assistant (default `hf:Qwen/Qwen3.8-27B`) judges each claim against our sources as supported, contradicted or unsupported, quoting the passage it used.
+
+The devil never sets a label: each label comes from how the item was built, and an item whose edit cannot be confirmed by code is dropped. Every miss is tagged *retrieval* (the source passage was never shown) or *reasoning* (shown but misjudged). Wrong claims are flagged `synthetic_false`, written only under `data/devil/`, and `load_snapshots()` refuses such rows, so they cannot reach the index or the chatbot. `eval/devil_runs/` keeps summaries and per-item scores without the wrong statements.
+
+```bash
+python scripts/make_criteria_cases.py --corpus data/eval_corpus data/sources
+python scripts/run_devil.py --corpus data/eval_corpus data/sources --packs 20 --sources pubmed
+python scripts/run_devil.py --corpus data/eval_corpus --items data/devil/<run>/items.jsonl   # same claims, smaller corpus
+```
 
 ## Eval
 
