@@ -151,7 +151,9 @@ def criteria_items(crit: dict) -> list[Item]:
         d = c.get("duration", {})
         if "min_months" in d:
             n = d["min_months"]
-            true = f"For {label}, the symptoms must last at least {n} month{'s' if n != 1 else ''} (criterion {d['criterion']})."
+            # Say it the way the table does: PTSD needs MORE than 1 month, GAD AT LEAST 6.
+            bound = "more than" if "more than" in c["criteria"][d["criterion"]] else "at least"
+            true = f"For {label}, the symptoms must last {bound} {n} month{'s' if n != 1 else ''} (criterion {d['criterion']})."
             wrong_n = {6: 2, 1: 3, 3: 6}.get(n, n * 2)
             out.append(Item(f"crit-{cond}-dur", true, "supported", "criteria:duration", f"criteria-{cond}"))
             out.append(Item(f"crit-{cond}-dur-x", true.replace(f"{n} month{'s' if n != 1 else ''}",
@@ -207,10 +209,18 @@ def grounded_verdict(model, retriever, item: Item, by_id: dict[str, dict], by_ci
     stmt = item.statement + (f" (cited: {item.cited})" if item.cited else "")
     if item.cited and not cited_docs:
         stmt += "\nNote: the cited source is not in our sources."
-    raw = model.complete([{"role": "system", "content": GROUNDED_PROMPT},
-                          {"role": "user", "content": "Passages:\n\n" + "\n\n".join(blocks) + f"\n\nStatement: {stmt}"}],
-                         max_tokens=2000)  # room for reasoning models to think before the JSON
+    msgs = [{"role": "system", "content": GROUNDED_PROMPT},
+            {"role": "user", "content": "Passages:\n\n" + "\n\n".join(blocks) + f"\n\nStatement: {stmt}"}]
+    raw = ""
+    for budget in (2000, 6000):  # reasoning models can spend the whole budget thinking and return nothing
+        raw = model.complete(msgs, max_tokens=budget)
+        if raw.strip():
+            break
     data = parse_json(raw) or {}
+    if not data:  # malformed JSON (e.g. an unescaped quote): the verdict comes first, so read it directly
+        m = re.search(r'"verdict"\s*:\s*"(\w+)"', raw)
+        n = re.search(r'"passage"\s*:\s*(\d+)', raw)
+        data = {"verdict": m.group(1) if m else None, "passage": int(n.group(1)) if n else None}
     verdict = data.get("verdict") if data.get("verdict") in LABELS else "unparsed"
     n = data.get("passage")
     quote_ok = None

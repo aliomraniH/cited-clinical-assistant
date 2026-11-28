@@ -1,0 +1,73 @@
+{
+  "run_id": "20261128T023232Z-devil",
+  "devil": "openai:gpt-5.5",
+  "grounded": "hf:Qwen/Qwen3.8-27B",
+  "families": {
+    "devil": "openai",
+    "grounded": "qwen"
+  },
+  "corpus": [
+    "data/eval_corpus",
+    "data/sources"
+  ],
+  "corpus_passages": 15808,
+  "packs": 0,
+  "dropped_at_build": {},
+  "items_from": "/tmp/claude-0/pilot_items.jsonl",
+  "items": 181,
+  "accuracy": 95.0,
+  "binary_accuracy": 98.3,
+  "wrong_accepted_rate": 1.5,
+  "true_rejected_rate": 2.3,
+  "quote_grounded": 99.3,
+  "misses": {
+    "reasoning": 9
+  },
+  "by_kind": {
+    "paraphrase": {
+      "n": 36,
+      "correct": 36,
+      "accuracy": 100.0
+    },
+    "edit:number": {
+      "n": 19,
+      "correct": 19,
+      "accuracy": 100.0
+    },
+    "edit:direction": {
+      "n": 19,
+      "correct": 18,
+      "accuracy": 94.7
+    },
+    "edit:population": {
+      "n": 17,
+      "correct": 16,
+      "accuracy": 94.1
+    },
+    "edit:intervention": {
+      "n": 19,
+      "correct": 13,
+      "accuracy": 68.4
+    },
+    "wrong_citation": {
+      "n": 20,
+      "correct": 20,
+      "accuracy": 100.0
+    },
+    "fake_pmid": {
+      "n": 20,
+      "correct": 20,
+      "accuracy": 100.0
+    },
+    "criteria": {
+      "n": 16,
+      "correct": 15,
+      "accuracy": 93.8
+    },
+    "untrusted": {
+      "n": 15,
+      "correct": 15,
+      "accuracy": 100.0
+    }
+  }
+}
