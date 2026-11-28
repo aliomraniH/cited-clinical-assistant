@@ -38,6 +38,20 @@ def build_server(assistant: Assistant | None = None, hub: PeerHub | None = None)
     def ask_literature(question: str) -> dict:
         return a.ask(question)
 
+    @mcp.tool(description="Conversational search for messages written the way people talk. Splits the message into "
+                          "readings, may ask one clarifying question, confirms what it understood, then answers with "
+                          "citations. Pass the returned session_id back on each turn; reply to its questions in 'message'.")
+    def converse(message: str, session_id: str | None = None) -> dict:
+        return a.converse(message, session_id)
+
+    @mcp.tool(description="Read a stored conversational-search session: transcript, state and current readings.")
+    def get_conversation(session_id: str) -> dict:
+        return a.get_conversation(session_id)
+
+    @mcp.tool(description="End a conversational-search session and return the per-reading scores.")
+    def end_conversation(session_id: str) -> dict:
+        return a.end_conversation(session_id)
+
     @mcp.tool(description="BM25 search over the indexed PubMed abstracts. Returns PMID, title, year, URL and abstract.")
     def search_literature(query: str, k: int = 8) -> dict:
         return a.search(query, k=max(1, min(k, 20)))
