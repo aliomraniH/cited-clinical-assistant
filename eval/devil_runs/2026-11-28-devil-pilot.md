@@ -1,6 +1,6 @@
 # Devil-agent pilot, 2026-11-28
 
-**Result:** on 181 claims the grounded assistant (Qwen3.8-27B) accepted 1 of 136 wrong or unsupported claims (0.7%) and rejected 1 of 45 true ones (2.2%). Exact-label accuracy was 95.0% with the wide corpus and 96.7% with PubMed abstracts only. Every miss was a reasoning miss; the right passage was always retrieved.
+**Result:** on 181 claims the grounded assistant (Qwen3.8-27B) accepted 2 of 137 wrong or unsupported claims (1.5%) as true and rejected 1 of 44 true ones (2.3%, a bug in our own item). Exact-label accuracy was 95.0% with the wide corpus and 96.7% with PubMed abstracts only. Every miss was a reasoning miss; the right passage was always retrieved.
 
 ## Setup
 
@@ -15,12 +15,12 @@
 | --- | --- | --- |
 | Exact-label accuracy | 96.7% | 95.0% |
 | Supported vs not (binary) | 98.3% | 98.3% |
-| Wrong claims accepted as supported | 1.5% of non-true items* | 1.5%* |
-| True claims rejected | 2.3% | 2.3% |
+| Wrong claims accepted as supported | 1.5% (2 of 137) | 1.5% (2 of 137) |
+| True claims rejected | 2.3% (1 of 44)* | 2.3% (1 of 44)* |
 | Quote found in the cited passage | 99.3% | 99.3% |
 | Misses: retrieval / reasoning | 0 / 6 | 0 / 9 |
 
-\* `wrong_accepted_rate` counts every non-supported item, so 2 of 136. One true criteria item was a builder bug (below), which makes the true-claim rejection 0 of 45 once fixed.
+\* That one item was a builder bug (below); with it fixed, no true claim was rejected.
 
 | Item kind | n | A | B |
 | --- | --- | --- | --- |
