@@ -1,0 +1,87 @@
+{
+  "version": "0.1-draft",
+  "note": "Diagnostic criteria paraphrased in our own words, keyed by DSM-5-TR criterion letter only. This is NOT DSM text and must not be quoted as such. Draft for clinician review. Numbers (counts, durations) are the thresholds the case builder and the devil corruptions work from. Eating disorder entries carry no weights, calories or sizes by design.",
+  "conditions": {
+    "gad": {
+      "label": "Generalized anxiety disorder",
+      "duration": {"min_months": 6, "criterion": "A"},
+      "criteria": {
+        "A": "Too much anxiety and worry about a number of everyday matters, present more days than not for at least 6 months.",
+        "B": "The person finds the worry hard to control.",
+        "C": "In adults, at least 3 of 6 physical or mental signs go with the worry, some present more days than not.",
+        "D": "The anxiety, worry or physical signs cause marked distress or get in the way of daily life.",
+        "E": "Not caused by a substance or a medical condition.",
+        "F": "Not better explained by another mental disorder, such as fear of a trauma reminder in PTSD or obsessions in OCD."
+      },
+      "count": {"criterion": "C", "min": 3, "of": 6, "items": ["restless or keyed up", "tiring easily", "trouble concentrating or mind going blank", "irritability", "muscle tension", "poor or unrestful sleep"]}
+    },
+    "depression": {
+      "label": "Major depressive disorder",
+      "duration": {"min_weeks": 2, "criterion": "A"},
+      "criteria": {
+        "A": "At least 5 of 9 symptoms in the same 2-week period, a change from before, and at least one is low mood or loss of interest or pleasure.",
+        "B": "The symptoms cause marked distress or impairment.",
+        "C": "Not caused by a substance or a medical condition.",
+        "D": "Not better explained by a psychotic disorder.",
+        "E": "There has never been a manic or hypomanic episode."
+      },
+      "count": {"criterion": "A", "min": 5, "of": 9, "required_one_of": ["low mood most of the day", "loss of interest or pleasure"],
+                "items": ["low mood most of the day", "loss of interest or pleasure", "clear change in appetite or weight", "sleeping too little or too much", "visibly slowed or agitated", "fatigue or loss of energy", "feeling worthless or excessively guilty", "trouble thinking, concentrating or deciding", "recurrent thoughts of death"]}
+    },
+    "ptsd": {
+      "label": "Posttraumatic stress disorder (adults)",
+      "duration": {"min_months": 1, "criterion": "F"},
+      "criteria": {
+        "A": "Exposure to actual or threatened death, serious injury or sexual violence: directly, as a witness, by learning it happened to someone close (violent or accidental), or through repeated, extreme exposure to the details at work.",
+        "B": "At least 1 intrusion symptom tied to the event: unwanted memories, distressing dreams, flashbacks, distress at reminders, or bodily reactions to reminders.",
+        "C": "At least 1 kind of avoidance: of inner reminders (memories, thoughts, feelings) or outer reminders (people, places, situations).",
+        "D": "At least 2 negative changes in thinking or mood that began or worsened after the event.",
+        "E": "At least 2 changes in arousal or reactivity that began or worsened after the event: irritability or anger, reckless behavior, hypervigilance, strong startle, poor concentration, sleep problems.",
+        "F": "B to E have lasted more than 1 month.",
+        "G": "Marked distress or impairment.",
+        "H": "Not caused by a substance or a medical condition."
+      },
+      "notes": {"acute_stress_disorder": "Symptoms lasting 3 days to 1 month after the event point to acute stress disorder instead.", "delayed_expression": "A delayed-expression specifier applies when full criteria are met only 6 months or more after the event.", "media_exposure": "Exposure through media does not count for A unless it is part of the person's work."}
+    },
+    "ocd": {
+      "label": "Obsessive-compulsive disorder",
+      "criteria": {
+        "A": "Obsessions, compulsions or both. Obsessions: repeated, unwanted, intrusive thoughts, urges or images that cause anxiety, which the person tries to ignore, push away or neutralize. Compulsions: repeated actions or mental acts the person feels driven to do in response to an obsession or rigid rules, aimed at lowering distress or preventing a feared event, but not realistically connected to it or clearly excessive.",
+        "B": "The obsessions or compulsions take a lot of time (for example more than 1 hour a day) or cause marked distress or impairment.",
+        "C": "Not caused by a substance or a medical condition.",
+        "D": "Not better explained by another disorder, such as worry in GAD, food rituals in an eating disorder, or guilty rumination in depression."
+      },
+      "time": {"min_hours_per_day": 1, "criterion": "B"},
+      "notes": {"insight": "Insight is specified as good or fair, poor, or absent (delusional beliefs).", "tics": "A tic-related specifier applies with a current or past tic disorder."}
+    },
+    "adhd": {
+      "label": "ADHD (adults, overlap only)",
+      "duration": {"min_months": 6, "criterion": "A"},
+      "criteria": {
+        "A": "For people 17 and older, at least 5 inattention symptoms and/or at least 5 hyperactivity-impulsivity symptoms, for at least 6 months.",
+        "B": "Several symptoms were present before age 12.",
+        "C": "Several symptoms show in 2 or more settings.",
+        "D": "Clear interference with social, school or work functioning.",
+        "E": "Not better explained by another mental disorder, such as an anxiety or mood disorder."
+      },
+      "onset": {"max_age": 12, "criterion": "B"}
+    },
+    "substance_use": {
+      "label": "Substance use disorder (overlap only)",
+      "duration": {"window_months": 12, "criterion": "A"},
+      "criteria": {
+        "A": "A problem pattern of use causing distress or impairment, with at least 2 of 11 signs within 12 months (for example craving, using more than intended, failed cutting down, tolerance, withdrawal, use despite harm)."
+      },
+      "count": {"criterion": "A", "min": 2, "of": 11, "severity": {"mild": "2-3", "moderate": "4-5", "severe": "6+"}}
+    },
+    "eating_disorder": {
+      "label": "Eating disorders (overlap only, no numbers on weight or food)",
+      "criteria": {
+        "AN": "Anorexia nervosa: restriction leading to significantly low body weight, intense fear of weight gain or behavior that blocks it, and disturbed experience of shape or weight.",
+        "BN": "Bulimia nervosa: recurrent binge episodes with loss of control plus repeated compensatory behavior, both at least once a week for 3 months, self-worth unduly tied to shape or weight.",
+        "BED": "Binge-eating disorder: recurrent binge episodes at least once a week for 3 months with marked distress and no regular compensatory behavior."
+      },
+      "duration": {"min_months": 3, "criterion": "BN"}
+    }
+  }
+}

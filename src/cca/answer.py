@@ -66,7 +66,8 @@ def format_passages(hits: list[Hit]) -> str:
     for i, h in enumerate(hits, start=1):
         d = h.doc
         year = (d.get("pub_date") or "")[:4]
-        blocks.append(f"[{i}] PMID {d['pmid']} | {d.get('journal', '')} {year}\nTitle: {d.get('title', '')}\n{d.get('abstract', '')}")
+        label = d.get("cite_label") or f"PMID {d['pmid']}"
+        blocks.append(f"[{i}] {label} | {d.get('journal', '')} {year}\nTitle: {d.get('title', '')}\n{d.get('abstract', '')}")
     return "\n\n".join(blocks)
 
 

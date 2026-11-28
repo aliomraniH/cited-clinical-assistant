@@ -1,0 +1,20 @@
+{
+  "note": "Sources beyond PubMed abstracts. Full text is kept only under CC BY or CC0 (checked per article). ADHD, substance use and eating disorders are pulled for symptom overlap only.",
+  "topics": {
+    "gad": {"pmc": "(\"Anxiety Disorders\"[MeSH Terms] OR \"generalized anxiety\"[Title/Abstract])", "epmc": "\"generalized anxiety disorder\"", "ct": "Generalized Anxiety Disorder"},
+    "depression": {"pmc": "(\"Depressive Disorder, Major\"[MeSH Terms] OR \"major depression\"[Title/Abstract])", "epmc": "\"major depressive disorder\"", "ct": "Major Depressive Disorder"},
+    "ocd": {"pmc": "(\"Obsessive-Compulsive Disorder\"[MeSH Terms] OR \"obsessive-compulsive\"[Title/Abstract])", "epmc": "\"obsessive-compulsive disorder\"", "ct": "Obsessive-Compulsive Disorder"},
+    "ptsd": {"pmc": "(\"Stress Disorders, Post-Traumatic\"[MeSH Terms] OR \"posttraumatic stress\"[Title/Abstract])", "epmc": "\"posttraumatic stress disorder\"", "ct": "PTSD"},
+    "adhd": {"pmc": "(\"Attention Deficit Disorder with Hyperactivity\"[MeSH Terms]) AND (comorbid*[Title/Abstract] OR anxiety[Title/Abstract] OR depress*[Title/Abstract])", "epmc": "\"ADHD\" AND (comorbidity OR anxiety OR depression) AND adult", "ct": "ADHD AND anxiety"},
+    "substance_use": {"pmc": "(\"Substance-Related Disorders\"[MeSH Terms]) AND (comorbid*[Title/Abstract] OR PTSD[Title/Abstract] OR depress*[Title/Abstract])", "epmc": "\"substance use disorder\" AND (PTSD OR depression OR anxiety)", "ct": "Substance Use Disorder AND PTSD"},
+    "eating_disorder": {"pmc": "(\"Feeding and Eating Disorders\"[MeSH Terms]) AND (obsessive*[Title/Abstract] OR comorbid*[Title/Abstract] OR anxiety[Title/Abstract])", "epmc": "\"eating disorder\" AND (obsessive-compulsive OR comorbidity)", "ct": "Eating Disorder AND Obsessive-Compulsive"}
+  },
+  "guidelines": [
+    {"id": "VADoD-PTSD-2023", "title": "VA/DoD CPG for PTSD and Acute Stress Disorder (2023)", "year": "2023", "topics": ["ptsd", "substance_use", "depression"],
+     "url": "https://www.healthquality.va.gov/HEALTHQUALITY/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG-Edited-111624-V5-81825.pdf"},
+    {"id": "VADoD-MDD-2022", "title": "VA/DoD CPG for Major Depressive Disorder (2022)", "year": "2022", "topics": ["depression"],
+     "url": "https://www.healthquality.va.gov/HEALTHQUALITY/guidelines/MH/mdd/VADODMDDCPGFinal508.pdf"},
+    {"id": "VADoD-SUD-2021", "title": "VA/DoD CPG for Substance Use Disorders (2021)", "year": "2021", "topics": ["substance_use"],
+     "url": "https://www.healthquality.va.gov/HEALTHQUALITY/guidelines/MH/sud/VA-DoD-SUD-CPG_Final_for-508_v3.pdf"}
+  ]
+}

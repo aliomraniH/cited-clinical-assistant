@@ -41,7 +41,8 @@ def main() -> int:
     ap.add_argument("--judge-model")
     ap.add_argument("--judge-base-url")
     ap.add_argument("--questions", type=Path, default=ROOT / "eval" / "questions.jsonl")
-    ap.add_argument("--corpus", type=Path, default=ROOT / "data" / "eval_corpus")
+    ap.add_argument("--corpus", type=Path, nargs="+", default=[ROOT / "data" / "eval_corpus"],
+                    help="one or more folders; add data/sources to test the wider corpus")
     ap.add_argument("--k", type=int, default=8)
     ap.add_argument("--min-score", type=float, default=4.0)
     ap.add_argument("--limit", type=int)

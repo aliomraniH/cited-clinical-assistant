@@ -29,7 +29,8 @@ def main() -> int:
     ap.add_argument("--base-url")
     ap.add_argument("--k", type=int, default=8)
     ap.add_argument("--min-score", type=float, default=4.0)
-    ap.add_argument("--snapshots", type=Path, default=ROOT / "data" / "snapshots")
+    ap.add_argument("--snapshots", type=Path, nargs="+", default=[ROOT / "data" / "snapshots"],
+                    help="one or more folders, e.g. data/snapshots data/sources")
     ap.add_argument("--retrieve-only", action="store_true")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
